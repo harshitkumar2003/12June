@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12June2026</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Playfair+Display:ital,wght@0,700;1,700&display=swap"
+        rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #000;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* ── PHASE 1: BIRTHDAY SCREEN ─────────────────────── */
+        #birthdayScreen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, #1a0010 0%, #0d0008 60%, #000 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+            overflow: hidden;
+            transition: opacity 1.5s ease;
+        }
+
+        #birthdayScreen.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Floating hearts background */
+        .bg-heart {
+            position: absolute;
+            pointer-events: none;
+            animation: floatHeart linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatHeart {
+            0% {
+                transform: translateY(110vh) rotate(0deg) scale(0.5);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.6;
+            }
+
+            90% {
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: translateY(-10vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Floating petals */
+        .petal {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 60% 40% 60% 40%;
+            animation: petalFall linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes petalFall {
+            0% {
+                transform: translateY(-5vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.7;
+            }
+
+            90% {
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: translateY(105vh) translateX(80px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Cake wrapper */
+        #cakeWrapper {
+            position: relative;
+            transform: scale(0);
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 20px;
+        }
+
+        #cakeWrapper.show {
+            transform: scale(1);
+        }
+
+        /* ── CAKE SVG container ── */
+        #cakeSvgContainer {
+            width: min(340px, 80vw);
+            height: auto;
+            filter: drop-shadow(0 0 30px rgba(220, 50, 80, 0.5));
+        }
+
+        /* Candle flame flicker */
+        @keyframes flicker {
+
+            0%,
+            100% {
+                transform: scaleY(1) scaleX(1) translateY(0);
+                opacity: 1;
+            }
+
+            25% {
+                transform: scaleY(1.1) scaleX(0.9) translateY(-1px);
+                opacity: 0.9;
+            }
+
+            50% {
+                transform: scaleY(0.9) scaleX(1.1) translateY(1px);
+                opacity: 1;
+            }
+
+            75% {
+                transform: scaleY(1.05) scaleX(0.95) translateY(-0.5px);
+                opacity: 0.95;
+            }
+        }
+
+        .flame {
+            transform-origin: center bottom;
+            animation: flicker 0.4s ease-in-out infinite;
+        }
+
+        .flame:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .flame:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .flame:nth-child(4) {
+            animation-delay: 0.05s;
+        }
+
+        .flame:nth-child(5) {
+            animation-delay: 0.15s;
+        }
+
+        /* Smoke */
+        .smoke-particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(200, 200, 200, 0.6);
+            pointer-events: none;
+            animation: smokeRise 2s ease-out forwards;
+        }
+
+        @keyframes smokeRise {
+            0% {
+                transform: translate(-50%, 0) scale(0.3);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translate(-50%, -60px) scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        /* Birthday text */
+        #birthdayText {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(28px, 6vw, 52px);
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 150, 150, 0.8), 0 0 40px rgba(220, 50, 80, 0.5);
+            opacity: 0;
+            transition: opacity 1.2s ease;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        #birthdayText.show {
+            opacity: 1;
+        }
+
+        /* Screen glow overlay */
+        #glowOverlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(255, 100, 120, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 11;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        #glowOverlay.glow {
+            opacity: 1;
+        }
+
+        /* ── PHASE 2: GIFT SECTION ───────────────────────── */
+        #giftSection {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #fff5f8 0%, #ffe8f0 30%, #fff9f5 60%, #fef0f8 100%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: opacity 1.5s ease;
+        }
+
+        #giftSection.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Pastel background flowers */
+        .bg-flower {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.12;
+            font-size: clamp(18px, 3vw, 30px);
+            animation: sway 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes sway {
+
+            0%,
+            100% {
+                transform: rotate(-8deg) scale(1);
+            }
+
+            50% {
+                transform: rotate(8deg) scale(1.1);
+            }
+        }
+
+        /* Gift section inner */
+        .gift-inner {
+            position: relative;
+            z-index: 1;
+            padding: 40px 20px 60px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Gift heading */
+        .gift-heading {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(38px, 8vw, 72px);
+            color: #b5446e;
+            text-align: center;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateY(-30px);
+            transition: opacity 1s ease 0.3s, transform 1s ease 0.3s;
+            text-shadow: 0 2px 15px rgba(181, 68, 110, 0.3);
+        }
+
+        .gift-heading.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .gift-sub {
+            text-align: center;
+            font-style: italic;
+            color: #c4789a;
+            font-size: clamp(14px, 2.5vw, 18px);
+            margin-bottom: 50px;
+            opacity: 0;
+            transition: opacity 1s ease 0.6s;
+        }
+
+        .gift-sub.show {
+            opacity: 1;
+        }
+
+        /* Card grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            justify-items: center;
+        }
+
+        /* Gift card */
+        .gift-card {
+            background: linear-gradient(145deg, #fffdf9, #fff5f8);
+            border: 1.5px solid rgba(200, 130, 160, 0.3);
+            border-radius: 20px;
+            padding: 30px 24px 26px;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: 0 8px 35px rgba(181, 68, 110, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease, box-shadow 0.3s ease;
+            cursor: default;
+        }
+
+        .gift-card:hover {
+            box-shadow: 0 14px 50px rgba(181, 68, 110, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transform: translateY(-4px) !important;
+        }
+
+        .gift-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Floral corners */
+        .gift-card::before,
+        .gift-card::after {
+            content: '🌸';
+            position: absolute;
+            font-size: 22px;
+            opacity: 0.5;
+        }
+
+        .gift-card::before {
+            top: 8px;
+            left: 10px;
+            transform: rotate(-15deg);
+        }
+
+        .gift-card::after {
+            bottom: 8px;
+            right: 10px;
+            transform: rotate(20deg);
+        }
+
+        .card-sticker {
+            font-size: 42px;
+            display: block;
+            text-align: center;
+            margin: 0 auto 12px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(18px, 3vw, 22px);
+            color: #8b2252;
+            text-align: center;
+            margin-bottom: 6px;
+            font-style: italic;
+        }
+
+        .card-by {
+            text-align: center;
+            font-size: 13px;
+            color: #c4789a;
+            margin-bottom: 20px;
+        }
+
+        .pink-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #e8698a, #c94b7b);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(201, 75, 123, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .pink-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 22px rgba(201, 75, 123, 0.5);
+        }
+
+        /* ── OVERLAY MODAL ─────────────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            padding: 16px;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(30, 0, 15, 0.75);
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-box {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 860px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 24px;
+            animation: modalIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.85);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            font-size: 22px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 5;
+            line-height: 1;
+            transition: transform 0.2s;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.2) rotate(90deg);
+        }
+
+        /* ── LETTER VIEWER ──────────────────────────────── */
+        #letterModal .modal-box {
+            background: #2a1a0e;
+            border: 2px solid #7a5230;
+        }
+
+        .letter-viewer {
+            padding: 30px 36px;
+        }
+
+        .letter-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+
+        .letter-nav-btn {
+            background: rgba(180, 100, 50, 0.25);
+            border: 1px solid #7a5230;
+            color: #e8c99a;
+            padding: 9px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+
+        .letter-nav-btn:hover {
+            background: rgba(180, 100, 50, 0.5);
+        }
+
+        .letter-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .letter-counter {
+            font-family: 'Cormorant Garamond', serif;
+            color: #c9a87a;
+            font-size: 14px;
+        }
+
+        /* Paper texture */
+        .letter-paper {
+            background: linear-gradient(160deg, #f5e6c8, #ede0c4, #f0ddb8);
+            border-radius: 4px;
+            padding: 36px 32px;
+            position: relative;
+            box-shadow: inset 0 0 40px rgba(120, 80, 20, 0.15), 0 6px 30px rgba(0, 0, 0, 0.4);
+            min-height: 300px;
+            animation: pageTurn 0.4s ease;
+        }
+
+        @keyframes pageTurn {
+            from {
+                transform: rotateY(-8deg) scale(0.97);
+                opacity: 0.6;
+            }
+
+            to {
+                transform: rotateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Burned corners */
+        .letter-paper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 4px;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(60, 30, 0, 0.5) 0%, transparent 18%),
+                radial-gradient(circle at 100% 0%, rgba(60, 30, 0, 0.4) 0%, transparent 15%),
+                radial-gradient(circle at 0% 100%, rgba(60, 30, 0, 0.4) 0%, transparent 15%),
+                radial-gradient(circle at 100% 100%, rgba(60, 30, 0, 0.5) 0%, transparent 18%);
+            pointer-events: none;
+        }
+
+        /* Wax seal */
+        .wax-seal {
+            position: absolute;
+            bottom: -16px;
+            right: 30px;
+            width: 52px;
+            height: 52px;
+            background: radial-gradient(circle at 35% 35%, #c0392b, #7b1a10);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .letter-number {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #8b5a2b;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .letter-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(24px, 5vw, 36px);
+            color: #6b3a1f;
+            margin-bottom: 18px;
+        }
+
+        .letter-body {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(15px, 2.5vw, 18px);
+            color: #4a2c10;
+            line-height: 1.9;
+            white-space: pre-line;
+        }
+
+        .letter-flowers {
+            text-align: center;
+            font-size: 18px;
+            margin: 16px 0 8px;
+            letter-spacing: 6px;
+            opacity: 0.6;
+        }
+
+        /* ── BOUQUET MODAL ──────────────────────────────── */
+        #bouquetModal .modal-box {
+            background: linear-gradient(160deg, #0d1a0d, #0a150a);
+            border: 2px solid rgba(100, 200, 80, 0.2);
+            text-align: center;
+            padding: 30px 20px 40px;
+        }
+
+        .bouquet-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(28px, 6vw, 48px);
+            color: #f8e8b0;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 220, 80, 0.4);
+        }
+
+        /* SVG Bouquet container */
+        #bouquetSvgWrap {
+            width: min(500px, 90vw);
+            margin: 0 auto;
+            filter: drop-shadow(0 0 25px rgba(255, 180, 80, 0.25));
+        }
+
+        .flower-sway {
+            transform-origin: center bottom;
+            animation: swaySlight 3s ease-in-out infinite;
+        }
+
+        .flower-sway:nth-child(odd) {
+            animation-delay: 0.5s;
+            animation-duration: 3.5s;
+        }
+
+        .flower-sway:nth-child(even) {
+            animation-delay: 1s;
+            animation-duration: 4s;
+        }
+
+        @keyframes swaySlight {
+
+            0%,
+            100% {
+                transform: rotate(-2deg);
+            }
+
+            50% {
+                transform: rotate(2deg);
+            }
+        }
+
+        .bouquet-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            color: #c9a87a;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        /* Floating petals in bouquet */
+        .bouquet-petal {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 60% 40%;
+            animation: bouquetPetalFloat linear infinite;
+        }
+
+        @keyframes bouquetPetalFloat {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-120px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* ── WISHES MODAL ───────────────────────────────── */
+        #wishesModal .modal-box {
+            background: linear-gradient(145deg, #fffdf9, #fff5f8);
+            border: 2px solid rgba(200, 130, 160, 0.3);
+            padding: 36px 32px;
+        }
+
+        .wishes-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(26px, 5vw, 40px);
+            color: #b5446e;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .wishes-sub {
+            text-align: center;
+            color: #c4789a;
+            font-style: italic;
+            font-size: 15px;
+            margin-bottom: 28px;
+        }
+
+        .wish-group {
+            margin-bottom: 22px;
+        }
+
+        .wish-group-label {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 16px;
+            color: #8b2252;
+            margin-bottom: 12px;
+        }
+
+        .wish-check-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(200, 130, 160, 0.2);
+            border-radius: 50px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .wish-check-item:hover {
+            background: rgba(255, 220, 230, 0.7);
+            border-color: rgba(200, 100, 140, 0.4);
+        }
+
+        .wish-check-item input[type="checkbox"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e8698a;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+
+        .wish-check-item input[type="checkbox"]:checked {
+            background: #e8698a;
+        }
+
+        .wish-check-item input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 13px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .wish-check-item label {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            color: #5a2a3a;
+            cursor: pointer;
+        }
+
+        .wish-textarea {
+            width: 100%;
+            min-height: 110px;
+            padding: 16px;
+            border: 1.5px solid rgba(200, 130, 160, 0.3);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            color: #4a1a2e;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .wish-textarea:focus {
+            border-color: #e8698a;
+        }
+
+        .wish-submit-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #e8698a, #c94b7b);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-style: italic;
+            cursor: pointer;
+            margin-top: 24px;
+            box-shadow: 0 5px 20px rgba(201, 75, 123, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .wish-submit-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 7px 28px rgba(201, 75, 123, 0.5);
+        }
+
+        .wish-success {
+            display: none;
+            text-align: center;
+            font-family: 'Great Vibes', cursive;
+            font-size: 32px;
+            color: #b5446e;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(200, 130, 160, 0.4), transparent);
+            margin: 20px 0;
+        }
+
+        /* Scrollbar gift section */
+        #giftSection::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #giftSection::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #giftSection::-webkit-scrollbar-thumb {
+            background: rgba(200, 130, 160, 0.4);
+            border-radius: 3px;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 600px) {
+            .letter-viewer {
+                padding: 20px 16px;
+            }
+
+            .letter-paper {
+                padding: 24px 18px;
+            }
+
+            #wishesModal .modal-box {
+                padding: 24px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+        <canvas id="matrixCanvas"></canvas>
+    </div>
+
+    <!-- BIRTHDAY SCREEN -->
+    <div id="birthdayScreen">
+        <div id="cakeWrapper">
+            <!-- CAKE SVG -->
+            <svg id="cakeSvgContainer" viewBox="0 0 340 320" xmlns="http://www.w3.org/2000/svg">
+                <!-- Plate -->
+                <ellipse cx="170" cy="285" rx="145" ry="18" fill="#b03050" opacity="0.3" />
+
+                <!-- Bottom tier -->
+                <rect x="50" y="210" width="240" height="65" rx="10" fill="#c0392b" />
+                <rect x="50" y="210" width="240" height="12" rx="5" fill="#e74c3c" />
+                <!-- Bottom icing drips -->
+                <path
+                    d="M60,210 Q70,198 80,210 Q90,198 100,210 Q110,198 120,210 Q130,198 140,210 Q150,198 160,210 Q170,198 180,210 Q190,198 200,210 Q210,198 220,210 Q230,198 240,210 Q250,198 260,210 Q270,198 280,210"
+                    stroke="none" fill="#fff" opacity="0.9" />
+                <!-- Bottom decor dots -->
+                <circle cx="75" cy="240" r="5" fill="#ff8fa3" />
+                <circle cx="103" cy="240" r="5" fill="#ff8fa3" />
+                <circle cx="131" cy="240" r="5" fill="#ff8fa3" />
+                <circle cx="159" cy="240" r="5" fill="#ff8fa3" />
+                <circle cx="187" cy="240" r="5" fill="#ff8fa3" />
+                <circle cx="215" cy="240" r="5" fill="#ff8fa3" />
+                <circle cx="243" cy="240" r="5" fill="#ff8fa3" />
+                <!-- Bottom little hearts -->
+                <text x="265" y="250" font-size="14" fill="#ff8fa3">♥</text>
+                <text x="48" y="250" font-size="14" fill="#ff8fa3">♥</text>
+
+                <!-- Middle tier -->
+                <rect x="75" y="145" width="190" height="68" rx="8" fill="#a93226" />
+                <rect x="75" y="145" width="190" height="11" rx="5" fill="#e74c3c" />
+                <!-- Middle icing drips -->
+                <path
+                    d="M85,145 Q95,134 105,145 Q115,134 125,145 Q135,134 145,145 Q155,134 165,145 Q175,134 185,145 Q195,134 205,145 Q215,134 225,145 Q235,134 245,145 Q255,134 265,145"
+                    fill="#fff" opacity="0.9" />
+                <!-- "Aya" text on cake -->
+                <text x="170" y="193" font-family="'Great Vibes', cursive" font-size="32" fill="#ffcdd8"
+                    text-anchor="middle" font-weight="bold"
+                    style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4))">Aya</text>
+                <!-- Middle hearts -->
+                <text x="82" y="175" font-size="12" fill="#ff8fa3">♥</text>
+                <text x="248" y="175" font-size="12" fill="#ff8fa3">♥</text>
+
+                <!-- Top tier -->
+                <rect x="105" y="90" width="130" height="58" rx="8" fill="#922b21" />
+                <rect x="105" y="90" width="130" height="10" rx="5" fill="#e74c3c" />
+                <!-- Top icing drips -->
+                <path
+                    d="M112,90 Q122,80 132,90 Q142,80 152,90 Q162,80 172,90 Q182,80 192,90 Q202,80 212,90 Q222,80 228,90"
+                    fill="#fff" opacity="0.9" />
+                <!-- Sprinkles -->
+                <rect x="120" y="108" width="12" height="4" rx="2" fill="#ff6b9d" transform="rotate(-20,126,110)" />
+                <rect x="145" y="115" width="10" height="4" rx="2" fill="#ffcc00" transform="rotate(10,150,117)" />
+                <rect x="170" y="105" width="11" height="4" rx="2" fill="#7ecef4" transform="rotate(-10,175,107)" />
+                <rect x="195" y="112" width="10" height="4" rx="2" fill="#ff6b9d" transform="rotate(25,200,114)" />
+                <rect x="215" y="107" width="11" height="4" rx="2" fill="#ffcc00" transform="rotate(-15,220,109)" />
+                <rect x="133" y="122" width="10" height="4" rx="2" fill="#b8f5b0" transform="rotate(30,138,124)" />
+                <rect x="185" y="120" width="11" height="4" rx="2" fill="#ffb3de" transform="rotate(-30,190,122)" />
+
+                <!-- Candles  (5 candles) -->
+                <!-- Candle 1 -->
+                <rect x="122" y="56" width="10" height="34" rx="3" fill="#f8d7e3" />
+                <rect x="122" y="56" width="10" height="8" rx="2" fill="#f4a7c3" />
+                <g class="flame" id="flame1">
+                    <ellipse cx="127" cy="51" rx="5" ry="8" fill="#ffdd44" opacity="0.9" />
+                    <ellipse cx="127" cy="49" rx="3" ry="5" fill="#ff9900" />
+                    <ellipse cx="127" cy="48" rx="1.5" ry="3" fill="#fff" opacity="0.8" />
+                </g>
+
+                <!-- Candle 2 -->
+                <rect x="144" y="52" width="10" height="38" rx="3" fill="#d7e8f8" />
+                <rect x="144" y="52" width="10" height="8" rx="2" fill="#a7c4f4" />
+                <g class="flame" id="flame2">
+                    <ellipse cx="149" cy="47" rx="5" ry="8" fill="#ffdd44" opacity="0.9" />
+                    <ellipse cx="149" cy="45" rx="3" ry="5" fill="#ff9900" />
+                    <ellipse cx="149" cy="44" rx="1.5" ry="3" fill="#fff" opacity="0.8" />
+                </g>
+
+                <!-- Candle 3 (center) -->
+                <rect x="165" y="48" width="10" height="42" rx="3" fill="#f8f8d7" />
+                <rect x="165" y="48" width="10" height="8" rx="2" fill="#f4f4a7" />
+                <g class="flame" id="flame3">
+                    <ellipse cx="170" cy="43" rx="6" ry="9" fill="#ffdd44" opacity="0.9" />
+                    <ellipse cx="170" cy="41" rx="3.5" ry="6" fill="#ff9900" />
+                    <ellipse cx="170" cy="39" rx="2" ry="3.5" fill="#fff" opacity="0.8" />
+                </g>
+
+                <!-- Candle 4 -->
+                <rect x="186" y="52" width="10" height="38" rx="3" fill="#d7f8e0" />
+                <rect x="186" y="52" width="10" height="8" rx="2" fill="#a7f4bf" />
+                <g class="flame" id="flame4">
+                    <ellipse cx="191" cy="47" rx="5" ry="8" fill="#ffdd44" opacity="0.9" />
+                    <ellipse cx="191" cy="45" rx="3" ry="5" fill="#ff9900" />
+                    <ellipse cx="191" cy="44" rx="1.5" ry="3" fill="#fff" opacity="0.8" />
+                </g>
+
+                <!-- Candle 5 -->
+                <rect x="207" y="56" width="10" height="34" rx="3" fill="#f8d7f8" />
+                <rect x="207" y="56" width="10" height="8" rx="2" fill="#f4a7f4" />
+                <g class="flame" id="flame5">
+                    <ellipse cx="212" cy="51" rx="5" ry="8" fill="#ffdd44" opacity="0.9" />
+                    <ellipse cx="212" cy="49" rx="3" ry="5" fill="#ff9900" />
+                    <ellipse cx="212" cy="48" rx="1.5" ry="3" fill="#fff" opacity="0.8" />
+                </g>
+
+                <!-- Bottom ribbon bow -->
+                <path d="M145,275 Q155,265 170,275 Q185,265 195,275 Q185,285 170,280 Q155,285 145,275Z" fill="#c0392b"
+                    opacity="0.7" />
+                <circle cx="170" cy="275" r="6" fill="#e74c3c" />
+            </svg>
+
+            <!-- Smoke particles container (JS populates) -->
+            <div id="smokeContainer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+            </div>
+        </div>
+
+        <div id="birthdayText">Happy Birthday My Love ❤️</div>
+    </div>
+
+    <div id="glowOverlay"></div>
+
+    <!-- ── GIFT SECTION ───────────────────────────────────── -->
+    <div id="giftSection">
+        <!-- Background flowers -->
+        <span class="bg-flower" style="top:5%;left:3%;animation-delay:0s">🌸</span>
+        <span class="bg-flower" style="top:12%;right:5%;animation-delay:1s">🌺</span>
+        <span class="bg-flower" style="top:30%;left:1%;animation-delay:2s">🌼</span>
+        <span class="bg-flower" style="top:50%;right:2%;animation-delay:0.5s">🌷</span>
+        <span class="bg-flower" style="top:70%;left:4%;animation-delay:1.5s">🌸</span>
+        <span class="bg-flower" style="top:85%;right:6%;animation-delay:2.5s">🌺</span>
+        <span class="bg-flower" style="top:95%;left:8%;animation-delay:0.8s">🌼</span>
+
+        <div class="gift-inner">
+            <h1 class="gift-heading" id="giftHeading">Gifts For Aya 💝</h1>
+            <p class="gift-sub" id="giftSub">— made with love, just for you —</p>
+
+            <div class="card-grid">
+                <!-- Card 1: Letters -->
+                <div class="gift-card" id="card1">
+                    <span class="card-sticker">💌</span>
+                    <h2 class="card-title">Letters</h2>
+                    <p class="card-by">by Harsh ❤️</p>
+                    <button class="pink-btn" onclick="openModal('letterModal')">Open Letters</button>
+                </div>
+
+                <!-- Card 2: Bouquet -->
+                <div class="gift-card" id="card2" style="transition-delay:0.15s">
+                    <span class="card-sticker">🌻</span>
+                    <h2 class="card-title">Virtual Flower Bouquet 🌻</h2>
+                    <p class="card-by">from Harsh's heart</p>
+                    <button class="pink-btn" onclick="openModal('bouquetModal')">Open Bouquet</button>
+                </div>
+
+                <!-- Card 3: Wishes -->
+                <div class="gift-card" id="card3" style="transition-delay:0.3s">
+                    <span class="card-sticker">💌</span>
+                    <h2 class="card-title">Birthday Wishes 💌</h2>
+                    <p class="card-by">tell me your choices</p>
+                    <button class="pink-btn" onclick="openModal('wishesModal')">Open Wishes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── LETTER MODAL ─────────────────────────────────── -->
+    <div class="modal-overlay" id="letterModal">
+        <div class="modal-backdrop" onclick="closeModal('letterModal')"></div>
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('letterModal')" style="color:#e8c99a">✕</button>
+            <div class="letter-viewer">
+                <div class="letter-paper" id="letterPaper">
+                    <div class="letter-flowers">🌸 🌺 🌸 🌺 🌸</div>
+                    <div class="letter-number" id="letterNum">Letter 1 of 12</div>
+                    <div class="letter-title" id="letterTitle"></div>
+                    <div class="letter-body" id="letterBody"></div>
+                    <div class="letter-flowers" style="margin-top:24px">🌸 🌺 🌸 🌺 🌸</div>
+                    <div class="wax-seal">❤️</div>
+                </div>
+                <div class="letter-nav">
+                    <button class="letter-nav-btn" id="prevBtn" onclick="changeLetterBy(-1)">← Previous</button>
+                    <span class="letter-counter" id="letterCounterDisplay">1 / 12</span>
+                    <button class="letter-nav-btn" id="nextBtn" onclick="changeLetterBy(1)">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── BOUQUET MODAL ────────────────────────────────── -->
+    <div class="modal-overlay" id="bouquetModal">
+        <div class="modal-backdrop" onclick="closeModal('bouquetModal')"></div>
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('bouquetModal')" style="color:#e8c99a">✕</button>
+            <p class="bouquet-title">A Bouquet For You 🌸</p>
+
+            <div id="bouquetSvgWrap">
+                <!-- Large SVG bouquet -->
+                <img src="boquet.png" alt="Flower Bouquet"
+                    style="width:100%;max-width:460px;height:auto;border-radius:18px;display:block;margin:0 auto;filter:drop-shadow(0 0 30px rgba(255,180,100,0.4));">
+            </div>
+        </div>
+    </div>
+
+    <!-- ── WISHES MODAL ─────────────────────────────────── -->
+    <div class="modal-overlay" id="wishesModal">
+        <div class="modal-backdrop" onclick="closeModal('wishesModal')"></div>
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('wishesModal')" style="color:#8b2252">✕</button>
+            <h2 class="wishes-title">Tell Me Your Birthday Choices ❤️</h2>
+            <p class="wishes-sub">Check everything your heart wants, love 🌸</p>
+
+            <div class="divider"></div>
+
+            <div class="wish-group">
+                <div class="wish-group-label">✨ Memories & Feelings</div>
+                <label class="wish-check-item"><input type="checkbox" name="wish"
+                        value="Relive our favorite memory together"> <label>Re-reading our deepest, most romantic chats
+                        together 🥺❤️</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Movie night cuddled together">
+                    <label>A late-night soul-to-soul deep talk under the sky, sharing our universe 🌌✨</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Long romantic drive">
+                    <label>Hearing every little thing Harsh has never had the courage to tell me 🌛🫥</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish"
+                        value="Surprise planned entirely by Harsh"> <label>Finding out which moments made Harsh feel the
+                        most attached to me 💖💖</label></label>
+            </div>
+
+            <div class="wish-group">
+                <div class="wish-group-label">🌸 Dreams & Wishes</div>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Dream date planned by Harsh">
+                    <label>Something thoughtful from Harsh that feels like a piece of him💑</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish"
+                        value="Future travel destination together"> <label>Making a digital 'Our Bucket List' together
+                        for everything we will do after June 11th 👑📝</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Stargazing night">
+                    <label>Falling asleep together on call after talking about everything and
+                        nothing🌿🤍</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Candlelight dinner">
+                    <label>A cute virtual date where I can just blush while he talks 🥰</label></label>
+            </div>
+
+            <div class="wish-group">
+                <div class="wish-group-label">💝 Personal Favourites</div>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Favourite flower from Harsh">
+                    <label>Reading a beautiful, long "Mega Letter" written just for my soul 💌✍️</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Favourite gift wish">
+                    <label>A sweet, cute nickname that only Harsh can call me 🎀</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Handwritten letter from Harsh">
+                    <label>A lifelong promise of protection and unconditional love from him 🤞❤️</label></label>
+                <label class="wish-check-item"><input type="checkbox" name="wish" value="Promise I want Harsh to keep">
+                    <label>A surprise gift that arrives straight to my heart 🎁✨</label></label>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="wish-group">
+                <div class="wish-group-label">💬 Write Your Heart Out</div>
+                <textarea class="wish-textarea" id="wishMessage"
+                    placeholder="Tell me your wishes, your dreams, your secret thoughts about us, or anything your heart wants to share ❤️ Anything that i forget to mention here..."></textarea>
+            </div>
+
+            <button class="wish-submit-btn" onclick="submitWishes()">Send to Harsh's Heart 💖</button>
+            <div class="wish-success" id="wishSuccess">Received with all my love, Aya ❤️🌸</div>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────── -->
+    <script>
+        // ── EmailJS init ──────────────────────────────────
+        (function () {
+            emailjs.init({
+                publicKey: "2D2uoMKK54no-tMQ3"
+            });
+        })();
+
+        // ── MATRIX / PARTICLE CORE (original code) ────────
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        let rippleParticles = [];
+        let drops = [], speeds = [], gridChars = [];
+        const fontSize = 14;
+        const loveLetters = "ILOVEYOU".split("");
+        let columns, rows;
+        let frames = 0;
+
+        let state = "SWEEP";
+        let sweepProgress = 0;
+        let isExploding = false;
+        let rainStarted = false;
+        let textOpacity = 0;
+
+        class Particle {
+            constructor(targetX, targetY, type = "normal") {
+                const cx = canvas.width / 2, cy = canvas.height / 2;
+                if (type === "ripple") {
+                    const s = 0.75;
+                    this.x = cx + (targetX - cx) * s;
+                    this.y = cy + (targetY - cy) * s;
+                    this.size = Math.random() * 2 + 2.5;
+                } else {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 1.0;
+                }
+                this.destX = targetX; this.destY = targetY;
+                this.color = (type === "ripple") ? "255, 105, 200" : "255, 255, 255";
+                this.active = true;
+                this.opacity = (type === "ripple") ? 0 : 1.0;
+                this.type = type;
+                this.progress = 0;
+                this.speed = 0.015 + Math.random() * 0.02;
+                this.driftX = (Math.random() - 0.5) * 0.4;
+                this.driftY = (Math.random() - 0.5) * 0.4;
+                this.noiseOffset = Math.random() * 2000;
+                this.stayTime = 40;
+                this.vx = 0; this.vy = 0;
+            }
+
+            update() {
+                if (this.type === "ripple") {
+                    if (this.progress < 1) {
+                        this.progress += this.speed;
+                        const s = 0.75, cx = canvas.width / 2, cy = canvas.height / 2;
+                        const sx = cx + (this.destX - cx) * s;
+                        const sy = cy + (this.destY - cy) * s;
+                        this.x = sx + (this.destX - sx) * this.progress;
+                        this.y = sy + (this.destY - sy) * this.progress;
+                        this.opacity = Math.min(this.progress * 4, 1);
+                    } else {
+                        this.x = this.destX + Math.sin(frames * 0.1 + this.noiseOffset) * 0.8;
+                        this.y = this.destY + Math.cos(frames * 0.1 + this.noiseOffset) * 0.8;
+                        this.stayTime--;
+                        this.opacity = this.stayTime / 40;
+                        if (this.stayTime <= 0) this.active = false;
+                    }
+                } else if (isExploding) {
+                    if (this.vx === 0 && this.vy === 0) {
+                        const a = Math.random() * Math.PI * 2;
+                        const f = Math.random() * 15 + 12;
+                        this.vx = Math.cos(a) * f; this.vy = Math.sin(a) * f;
+                    }
+                    this.x += this.vx; this.y += this.vy;
+                    this.vx *= 0.985; this.vy *= 0.985;
+                } else if (state === "FINISHED" || state === "FINAL_HEART") {
+                    if (this.opacity > 0.25) this.opacity -= 0.005;
+                    this.x += this.driftX + Math.sin(frames * 0.02 + this.noiseOffset) * 0.15;
+                    this.y += this.driftY + Math.cos(frames * 0.02 + this.noiseOffset) * 0.15;
+                    this.vx = 0; this.vy = 0;
+                } else {
+                    this.x += (this.destX - this.x) * 0.07;
+                    this.y += (this.destY - this.y) * 0.07;
+                    this.vx = 0; this.vy = 0;
+                }
+            }
+
+            draw() {
+                if (!this.active || this.opacity <= 0) return;
+                ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
+                if (this.type === "ripple") {
+                    this.drawHeart(this.x, this.y, this.size * 2.8);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            drawHeart(x, y, size) {
+                ctx.beginPath();
+                ctx.moveTo(x, y + size / 4);
+                ctx.bezierCurveTo(x, y, x - size / 2, y, x - size / 2, y + size / 4);
+                ctx.bezierCurveTo(x - size / 2, y + size / 2, x, y + size * 0.75, x, y + size);
+                ctx.bezierCurveTo(x, y + size * 0.75, x + size / 2, y + size / 2, x + size / 2, y + size / 4);
+                ctx.bezierCurveTo(x + size / 2, y, x, y, x, y + size / 4);
+                ctx.fill();
+            }
+        }
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            columns = Math.ceil(canvas.width / fontSize);
+            rows = Math.ceil(canvas.height / fontSize);
+            drops = []; speeds = []; gridChars = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = -Math.random() * 20;
+                speeds[i] = 0.1 + Math.random() * 0.3;
+                gridChars[i] = [];
+                for (let j = 0; j < rows; j++) {
+                    gridChars[i][j] = loveLetters[Math.floor(Math.random() * loveLetters.length)];
+                }
+            }
+        }
+
+        function getHeartOutlinePoints(count) {
+            const pts = [], cx = canvas.width / 2, cy = canvas.height / 2;
+            const scale = Math.min(canvas.width, canvas.height) / 45;
+            for (let i = 0; i < count; i++) {
+                const t = (i / count) * Math.PI * 2;
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                pts.push({x: cx + x * scale, y: cy + y * scale});
+            }
+            return pts;
+        }
+
+        function getTextPoints(text) {
+            const pts = [], tc = document.createElement('canvas'), tx = tc.getContext('2d');
+            tc.width = canvas.width; tc.height = canvas.height;
+            const isT = isNaN(text) && text.length <= 4 || text.length === 1;
+            let tSize = isT ? (!isNaN(text) ? Math.min(canvas.width / 2.2, 400) : Math.min(canvas.width / 3.5, 250))
+                : Math.min(canvas.width / 4, 180);
+            tx.font = `bold ${tSize}px Arial`;
+            tx.textAlign = 'center'; tx.textBaseline = 'middle'; tx.fillStyle = 'white';
+            tx.fillText(text, canvas.width / 2, canvas.height / 2);
+            const data = tx.getImageData(0, 0, canvas.width, canvas.height).data;
+            for (let y = 0; y < canvas.height; y += 10)
+                for (let x = 0; x < canvas.width; x += 10)
+                    if (data[(y * canvas.width + x) * 4 + 3] > 128) pts.push({x, y});
+            return pts;
+        }
+
+        function updateParticleTargets(text) {
+            const np = getTextPoints(text);
+            for (let i = 0; i < Math.max(particles.length, np.length); i++) {
+                if (i < np.length) {
+                    if (i < particles.length) {particles[i].destX = np[i].x; particles[i].destY = np[i].y; particles[i].active = true;}
+                    else particles.push(new Particle(np[i].x, np[i].y));
+                } else if (particles[i]) particles[i].active = false;
+            }
+        }
+
+        let rippleTimer = 0;
+        function createHeartRipple() {
+            if (rippleTimer % 20 === 0) {
+                getHeartOutlinePoints(150).forEach(pt =>
+                    rippleParticles.push(new Particle(pt.x, pt.y, "ripple"))
+                );
+            }
+            rippleTimer++;
+        }
+
+        // ── PHASE TRANSITION TRACKING ─────────────────────
+        let birthdayPhaseStarted = false;
+        let birthdayPhaseComplete = false;
+
+        async function startParticleSequence() {
+            state = "SEQUENCE";
+            for (let text of ["3", "2", "1"]) {
+                updateParticleTargets(text);
+                await delay(2000);
+            }
+            isExploding = true; await delay(2200); isExploding = false;
+            for (let word of ["You", "Are", "My", "Love"]) {
+                updateParticleTargets(word);
+                await delay(2000);
+            }
+            isExploding = true; await delay(800); isExploding = false;
+            state = "FINAL_HEART";
+
+            // After 4 seconds on final heart, transition to birthday screen
+            await delay(4000);
+            transitionToBirthday();
+        }
+
+        function delay(ms) {return new Promise(r => setTimeout(r, ms));}
+
+        async function transitionToBirthday() {
+            if (birthdayPhaseStarted) return;
+            birthdayPhaseStarted = true;
+
+            // Spawn background elements
+            spawnBgHearts();
+            spawnBgPetals();
+
+            // Show birthday screen (fade in)
+            const bs = document.getElementById('birthdayScreen');
+            bs.classList.add('visible');
+
+            // Scale up cake
+            await delay(400);
+            document.getElementById('cakeWrapper').classList.add('show');
+
+            // Show birthday text
+            await delay(1000);
+            document.getElementById('birthdayText').classList.add('show');
+
+            // After 3 more seconds, blow out candles
+            await delay(3000);
+            blowOutCandles();
+            document.getElementById('glowOverlay').classList.add('glow');
+
+            await delay(2500);
+
+            // Fade into gift section
+            bs.style.transition = 'opacity 1.5s ease';
+            bs.style.opacity = '0';
+            document.getElementById('glowOverlay').style.opacity = '0';
+
+            await delay(1200);
+            bs.style.pointerEvents = 'none';
+
+            showGiftSection();
+        }
+
+        function blowOutCandles() {
+            const flameIds = ['flame1', 'flame2', 'flame3', 'flame4', 'flame5'];
+            const xPositions = [127, 149, 170, 191, 212]; // approximate center x per candle
+            const yPositions = [52, 48, 44, 48, 52];      // approximate top y per candle
+
+            flameIds.forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.transition = 'opacity 0.5s ease';
+                    el.style.opacity = '0';
+                    setTimeout(() => {
+                        el.style.display = 'none';
+                        createSmoke(xPositions[i], yPositions[i]);
+                    }, i * 150);
+                }
+            });
+        }
+
+        function createSmoke(svgX, svgY) {
+            const container = document.getElementById('smokeContainer');
+            const svgEl = document.getElementById('cakeSvgContainer');
+            const rect = svgEl.getBoundingClientRect();
+            const scaleX = rect.width / 340;
+            const scaleY = rect.height / 320;
+            const absX = rect.left + svgX * scaleX;
+            const absY = rect.top + svgY * scaleY;
+
+            for (let i = 0; i < 4; i++) {
+                setTimeout(() => {
+                    const s = document.createElement('div');
+                    s.className = 'smoke-particle';
+                    const sz = 10 + Math.random() * 10;
+                    s.style.cssText = `width:${sz}px;height:${sz}px;position:fixed;left:${absX}px;top:${absY}px;`;
+                    document.body.appendChild(s);
+                    setTimeout(() => s.remove(), 2100);
+                }, i * 300);
+            }
+        }
+
+        async function showGiftSection() {
+            const gs = document.getElementById('giftSection');
+            gs.classList.add('visible');
+
+            await delay(400);
+            document.getElementById('giftHeading').classList.add('show');
+            document.getElementById('giftSub').classList.add('show');
+
+            await delay(600);
+            document.getElementById('card1').classList.add('show');
+            await delay(150);
+            document.getElementById('card2').classList.add('show');
+            await delay(150);
+            document.getElementById('card3').classList.add('show');
+
+            birthdayPhaseComplete = true;
+        }
+
+        // Spawn decorative bg hearts on birthday screen
+        function spawnBgHearts() {
+            const screen = document.getElementById('birthdayScreen');
+            const hearts = ['❤️', '💕', '💗', '💓', '💞', '🌸'];
+            for (let i = 0; i < 18; i++) {
+                const el = document.createElement('div');
+                el.className = 'bg-heart';
+                el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                el.style.cssText = `
+                left:${Math.random() * 100}%;
+                font-size:${12 + Math.random() * 20}px;
+                animation-duration:${6 + Math.random() * 8}s;
+                animation-delay:${Math.random() * 5}s;
+            `;
+                screen.appendChild(el);
+            }
+        }
+
+        function spawnBgPetals() {
+            const screen = document.getElementById('birthdayScreen');
+            for (let i = 0; i < 20; i++) {
+                const el = document.createElement('div');
+                el.className = 'petal';
+                const hue = Math.random() > 0.5 ? '340' : '320';
+                el.style.cssText = `
+                left:${Math.random() * 100}%;
+                width:${8 + Math.random() * 12}px;
+                height:${5 + Math.random() * 8}px;
+                background:hsl(${hue},70%,70%);
+                animation-duration:${7 + Math.random() * 10}s;
+                animation-delay:${Math.random() * 8}s;
+            `;
+                screen.appendChild(el);
+            }
+        }
+
+        // ── MATRIX DRAW ───────────────────────────────────
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0,0,0,0.25)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = fontSize + "px monospace";
+
+            if (state === "SWEEP") {
+                sweepProgress += 0.45;
+                if (sweepProgress >= rows * 0.7) rainStarted = true;
+                if (sweepProgress >= rows + 15) {state = "WAITING"; startParticleSequence();}
+                const lim = Math.floor(sweepProgress);
+                for (let i = 0; i < columns; i++) {
+                    for (let j = 0; j <= lim && j < rows; j++) {
+                        const d = lim - j;
+                        if (d < 15) {
+                            ctx.fillStyle = `rgba(255,105,180,${(1 - d / 15) * 0.6})`;
+                            ctx.fillText(gridChars[i][j], i * fontSize, j * fontSize);
+                        }
+                    }
+                }
+            }
+
+            if (rainStarted) {
+                for (let i = 0; i < columns; i++) {
+                    drops[i] += speeds[i];
+                    if (drops[i] > rows && Math.random() > 0.985) drops[i] = 0;
+                    const cr = Math.floor(drops[i]);
+                    for (let j = 0; j < 10; j++) {
+                        const r = cr - j;
+                        if (r >= 0 && r < rows) {
+                            ctx.fillStyle = `rgba(255,105,180,${0.2 * (1 - j / 10)})`;
+                            ctx.fillText(gridChars[i][r], i * fontSize, r * fontSize);
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawFinalText() {
+            if (state === "FINAL_HEART") {
+                if (textOpacity < 1) textOpacity += 0.01;
+                ctx.font = `bold ${Math.min(canvas.width / 24, 26)}px "Comic Sans MS", cursive`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillStyle = `rgba(255,255,255,${textOpacity})`;
+                ctx.fillText("I LOVE YOU AYA❤️", canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        function draw() {
+            // Stop drawing matrix once gift section is live
+            if (!birthdayPhaseComplete) {
+                drawMatrix();
+            }
+
+            if (state !== "SWEEP") {
+                particles.forEach(p => {p.update(); p.draw();});
+            }
+            if (state === "FINAL_HEART" && !birthdayPhaseStarted) {
+                createHeartRipple();
+                for (let i = rippleParticles.length - 1; i >= 0; i--) {
+                    rippleParticles[i].update();
+                    if (!rippleParticles[i].active) rippleParticles.splice(i, 1);
+                    else rippleParticles[i].draw();
+                }
+                drawFinalText();
+            }
+
+            // Credit (only on matrix phases)
+            if (!birthdayPhaseStarted) {
+                ctx.font = "12px Arial";
+                ctx.fillStyle = "rgba(255,255,255,0.3)";
+                ctx.textAlign = "center";
+                ctx.fillText("by your love Harsh💖", canvas.width - 60, canvas.height - 20);
+            }
+
+            frames++;
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        draw();
+
+        // ── MODAL CONTROLS ────────────────────────────────
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+            if (id === 'letterModal') renderLetter();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+            }
+        });
+
+        // ── LETTERS ───────────────────────────────────────
+        // ↓↓ PASTE YOUR 12 LETTERS HERE — replace the placeholder text ↓↓
+        const letters = [
+            {
+                title: "Reason 1 — My Safe Place",
+                body: `I love you because with you, I feel emotionally safe no matter how far we are.
+
+You feel like home even through a screen.`
+            },
+            {
+                title: "Reason 2 — The Way You Understand Me",
+                body: `I love you because you understand me even when I don’t say everything clearly.
+
+You just get me... and that means everything.`
+            },
+            {
+                title: "Reason 3 — My Favourite Feeling",
+                body: `I love you because thinking about you instantly makes my mood better.
+
+You are my favourite feeling in this whole world.`
+            },
+            {
+                title: "Reason 4 — The Way You Stay in My Mind",
+                body: `I love you because you stay in my thoughts all day without trying.
+
+Even silence feels connected when it's you.`
+            },
+            {
+                title: "Reason 5 — Our Conversations",
+                body: `I love you because our conversations never feel boring or forced.
+
+Even random talks with you feel special.`
+            },
+            {
+                title: "Reason 6 — Your Presence",
+                body: `I love you because your presence, even in messages or calls, calms me instantly.
+
+You bring peace into my chaos.`
+            },
+            {
+                title: "Reason 7 — The Way You Care",
+                body: `I love you because you care in ways that are simple but deeply meaningful.
+
+You notice things others don’t.`
+            },
+            {
+                title: "Reason 8 — My Emotional Attachment to You",
+                body: `I love you because I didn’t even realise when you became so important to me.
+
+Now you’re just part of my heart.`
+            },
+            {
+                title: "Reason 9 — Our Distance",
+                body: `I love you because even distance couldn’t reduce what I feel for you.
+
+If anything, it made it stronger.`
+            },
+            {
+                title: "Reason 10 — My Favourite Person",
+                body: `I love you because out of everyone, you became my favourite person without trying.
+
+No one compares to you.`
+            },
+            {
+                title: "Reason 11 — The Way You Make Me Feel",
+                body: `I love you because you make me feel wanted, valued, and emotionally connected.
+
+You make love feel real.`
+            },
+            {
+                title: "Reason 12 — Always and Forever",
+                body: `I love you because no matter what happens, a part of me will always choose you.
+
+Not just today… but always.`
+            }
+        ];
+
+        let currentLetter = 0;
+
+        function renderLetter() {
+            const l = letters[currentLetter];
+            document.getElementById('letterTitle').textContent = l.title;
+            document.getElementById('letterBody').textContent = l.body;
+            document.getElementById('letterNum').textContent = `Letter ${currentLetter + 1} of ${letters.length}`;
+            document.getElementById('letterCounterDisplay').textContent = `${currentLetter + 1} / ${letters.length}`;
+            document.getElementById('prevBtn').disabled = (currentLetter === 0);
+            document.getElementById('nextBtn').disabled = (currentLetter === letters.length - 1);
+            // Re-trigger page turn animation
+            const paper = document.getElementById('letterPaper');
+            paper.style.animation = 'none';
+            requestAnimationFrame(() => {paper.style.animation = '';});
+        }
+
+        function changeLetterBy(dir) {
+            const next = currentLetter + dir;
+            if (next < 0 || next >= letters.length) return;
+            currentLetter = next;
+            renderLetter();
+        }
+
+        // ── WISHES / EMAILJS ─────────────────────────────
+        async function submitWishes() {
+            const checkboxes =
+                document.querySelectorAll('input[name="wish"]:checked');
+
+            const selected =
+                Array.from(checkboxes).map(c => c.value);
+
+            const message =
+                document.getElementById('wishMessage').value.trim();
+
+            if (selected.length === 0 && !message) {
+                alert("Please select at least one wish or write a message, love 🌸");
+                return;
+            }
+
+            const btn = document.querySelector('.wish-submit-btn');
+
+            btn.disabled = true;
+            btn.textContent = "Sending... 💌";
+
+            const templateParams = {
+                name: "Aya",
+                wishes_list: selected.join(", "),
+                message: message || "(no message)"
+            };
+
+            try {
+
+                const response = await emailjs.send(
+                    "service_4hb46tb",
+                    "template_mdjxak3",
+                    templateParams,
+                    "2D2uoMKK54no-tMQ3"
+                );
+
+                console.log("SUCCESS!", response);
+
+                document.getElementById("wishSuccess").style.display = "block";
+
+                document
+                    .querySelectorAll('input[name="wish"]')
+                    .forEach(cb => cb.checked = false);
+
+                document.getElementById("wishMessage").value = "";
+
+                btn.textContent = "Sent Successfully ❤️";
+
+            } catch (error) {
+
+                console.error("EMAILJS ERROR:", error);
+
+                alert(
+                    "Email failed.\n\n" +
+                    JSON.stringify(error, null, 2)
+                );
+
+                btn.disabled = false;
+                btn.textContent = "Send to Harsh's Heart 💖";
+            }
+        }
+    </script>
+</body>
+
+</html>
